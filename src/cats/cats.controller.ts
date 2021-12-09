@@ -1,12 +1,27 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
-import { CreateCatDto } from './create-cat.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  UseFilters,
+} from '@nestjs/common';
+import { HttpExceptionFilter } from 'src/http-exception.filter';
+import { CatsService } from './cats.service';
+import { CreateCatDto } from './dtos/create-cat.dto';
+import { Cat } from './interfaces/cat.interface';
 
 @Controller('cats')
+@UseFilters(HttpExceptionFilter)
 export class CatsController {
+  constructor(private catsService: CatsService) {}
+
   @Post()
-  @HttpCode(204)
-  create(@Body() createCatDto: CreateCatDto): string {
-    return 'This action adds a new cat';
+  async create(@Body() createCatDto: CreateCatDto) {
+    this.catsService.create(createCatDto);
+    return 'created cat';
   }
 
   @Get(':id')
@@ -15,7 +30,8 @@ export class CatsController {
   }
 
   @Get()
-  async findAll(): Promise<any[]> {
-    return [];
+  async findAll(): Promise<Cat[]> {
+    // return this.catsService.findAll();
+    throw new HttpException('Forbidden Access', HttpStatus.FORBIDDEN);
   }
 }
